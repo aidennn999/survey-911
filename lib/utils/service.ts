@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import {app} from "@/lib/firebase/init";
 import bcrypt from "bcrypt";
+import {sendVerificationEmail} from "@/lib/actions/email";
 
 const firestore = getFirestore(app);
 
@@ -98,46 +99,77 @@ export async function register(data: {
  message: string;
  userId?: string;
 }> {
- const q = query(
-  collection(firestore, "users"),
-  where("email", "==", data.email)
- );
- const snapshot = await getDocs(q);
-
- if (!snapshot.empty) {
-  return {
-   status: false,
-   statusCode: 400,
-   message: "Email already exists",
-  };
- }
-
- data.password = await bcrypt.hash(data.password, 10);
- const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
  try {
-  const userRef = await addDoc(collection(firestore, "users"), {
-   ...data,
-   role: "member",
-   verified: false,
-   otp,
-   otpExpiry: new Date(Date.now() + 15 * 60 * 1000),
-   createdAt: new Date(),
-   updatedAt: new Date(),
-  });
+  const q = query(
+   collection(firestore, "users"),
+   where("email", "==", data.email)
+  );
+  const snapshot = await getDocs(q);
 
-  return {
-   status: true,
-   statusCode: 200,
-   message: "Verification email sent",
-   userId: userRef.id,
-  };
+  if (!snapshot.empty) {
+   return {
+    status: false,
+    statusCode: 400,
+    message: "Email already exists",
+   };
+  }
+
+  data.password = await bcrypt.hash(data.password, 10);
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  try {
+   const userRef = await addDoc(collection(firestore, "users"), {
+    ...data,
+    role: "member",
+    verified: false,
+    otp,
+    otpExpiry: new Date(Date.now() + 15 * 60 * 1000),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+   });
+
+   console.log("User saved to database:", userRef.id);
+
+   // Try to send verification email
+   try {
+    await sendVerificationEmail(data.email, otp, data.fullname);
+    console.log("Verification email sent successfully");
+
+    return {
+     status: true,
+     statusCode: 200,
+     message: "Verification email sent",
+     userId: userRef.id,
+    };
+   } catch (emailError) {
+    console.error("Email sending failed, but user was registered:", emailError);
+
+    // User is registered but email failed - we can still return success
+    // but inform the user about email issue
+    return {
+     status: true,
+     statusCode: 200,
+     message:
+      "Registration successful but verification email failed. Please contact support.",
+     userId: userRef.id,
+    };
+   }
+  } catch (dbError) {
+   console.error("Database error:", dbError);
+   return {
+    status: false,
+    statusCode: 400,
+    message: "Registration failed - database error",
+   };
+  }
  } catch (error) {
   console.error("Registration error:", error);
   return {
    status: false,
-   statusCode: 400,
-   message: "Registration failed",
+   statusCode: 500,
+   message: `Registration failed: ${
+    error instanceof Error ? error.message : "Unknown error"
+   }`,
   };
  }
 }

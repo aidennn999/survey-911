@@ -1,4 +1,4 @@
-import {login} from "@/lib/utils/services";
+import {login} from "@/lib/utils/service";
 import {signIn} from "next-auth/react";
 import {NextResponse} from "next/server";
 
