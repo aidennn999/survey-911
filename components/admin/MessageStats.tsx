@@ -1,5 +1,3 @@
-"use client";
-
 interface MessageStatsProps {
  stats: {
   total: number;
@@ -12,7 +10,7 @@ interface MessageStatsProps {
 export default function MessageStats({stats}: MessageStatsProps) {
  const statCards = [
   {
-   name: "Total Messages",
+   title: "Total Pesan",
    value: stats.total,
    color: "bg-blue-500",
    icon: (
@@ -31,7 +29,7 @@ export default function MessageStats({stats}: MessageStatsProps) {
    ),
   },
   {
-   name: "Unread",
+   title: "Belum Dibaca",
    value: stats.unread,
    color: "bg-red-500",
    icon: (
@@ -44,13 +42,13 @@ export default function MessageStats({stats}: MessageStatsProps) {
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"
+      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
      />
     </svg>
    ),
   },
   {
-   name: "Read",
+   title: "Sudah Dibaca",
    value: stats.read,
    color: "bg-green-500",
    icon: (
@@ -63,13 +61,13 @@ export default function MessageStats({stats}: MessageStatsProps) {
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
-      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
      />
     </svg>
    ),
   },
   {
-   name: "Replied",
+   title: "Sudah Dibalas",
    value: stats.replied,
    color: "bg-purple-500",
    icon: (
@@ -90,28 +88,17 @@ export default function MessageStats({stats}: MessageStatsProps) {
  ];
 
  return (
-  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-   {statCards.map((stat) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+   {statCards.map((stat, index) => (
     <div
-     key={stat.name}
-     className="bg-white overflow-hidden shadow rounded-lg">
-     <div className="p-5">
-      <div className="flex items-center">
-       <div className="flex-shrink-0">
-        <div
-         className={`w-12 h-12 ${stat.color} rounded-full flex items-center justify-center`}>
-         {stat.icon}
-        </div>
-       </div>
-       <div className="ml-5 w-0 flex-1">
-        <dl>
-         <dt className="text-sm font-medium text-gray-500 truncate">
-          {stat.name}
-         </dt>
-         <dd className="text-2xl font-bold text-gray-900">{stat.value}</dd>
-        </dl>
-       </div>
+     key={index}
+     className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+     <div className="flex items-center justify-between">
+      <div>
+       <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+       <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
       </div>
+      <div className={`${stat.color} rounded-full p-3`}>{stat.icon}</div>
      </div>
     </div>
    ))}

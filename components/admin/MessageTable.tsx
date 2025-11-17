@@ -11,18 +11,21 @@ interface MessagesTableProps {
  messages: AnonymousMessage[];
 }
 
-export default function MessagesTable({messages}: MessagesTableProps) {
- const [localMessages, setLocalMessages] =
-  useState<AnonymousMessage[]>(messages);
+export default function MessagesTable({
+ messages: initialMessages,
+}: MessagesTableProps) {
+ const [messages, setMessages] = useState(initialMessages);
+ const [selectedMessage, setSelectedMessage] =
+  useState<AnonymousMessage | null>(null);
 
- const handleStatusChange = async (
+ const handleStatusUpdate = async (
   messageId: string,
   newStatus: "unread" | "read" | "replied"
  ) => {
   const success = await updateMessageStatus(messageId, newStatus);
   if (success) {
-   setLocalMessages((prev) =>
-    prev.map((msg) =>
+   setMessages(
+    messages.map((msg) =>
      msg.id === messageId ? {...msg, status: newStatus} : msg
     )
    );
@@ -30,122 +33,115 @@ export default function MessagesTable({messages}: MessagesTableProps) {
  };
 
  const handleDelete = async (messageId: string) => {
-  if (confirm("Are you sure you want to delete this message?")) {
+  if (confirm("Apakah Anda yakin ingin menghapus pesan ini?")) {
    const success = await deleteAnonymousMessage(messageId);
    if (success) {
-    setLocalMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+    setMessages(messages.filter((msg) => msg.id !== messageId));
    }
   }
  };
 
- const getStatusBadge = (status: string) => {
-  const baseClasses =
-   "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
-
+ const getStatusColor = (status: string) => {
   switch (status) {
    case "unread":
-    return `${baseClasses} bg-red-100 text-red-800`;
+    return "bg-red-100 text-red-800";
    case "read":
-    return `${baseClasses} bg-yellow-100 text-yellow-800`;
+    return "bg-yellow-100 text-yellow-800";
    case "replied":
-    return `${baseClasses} bg-green-100 text-green-800`;
+    return "bg-green-100 text-green-800";
    default:
-    return `${baseClasses} bg-gray-100 text-gray-800`;
+    return "bg-gray-100 text-gray-800";
   }
  };
 
  const formatDate = (date: Date) => {
-  return new Intl.DateTimeFormat("en-US", {
-   year: "numeric",
-   month: "short",
+  return new Intl.DateTimeFormat("id-ID", {
    day: "numeric",
+   month: "long",
+   year: "numeric",
    hour: "2-digit",
    minute: "2-digit",
   }).format(date);
  };
 
- if (localMessages.length === 0) {
-  return null;
- }
-
  return (
-  <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-   <div className="px-4 py-5 sm:px-6">
-    <h3 className="text-lg leading-6 font-medium text-gray-900">
-     Anonymous Messages
-    </h3>
-    <p className="mt-1 max-w-2xl text-sm text-gray-500">
-     Messages from anonymous customers
-    </p>
-   </div>
-
-   <div className="border-t border-gray-200">
+  <>
+   <div className="bg-white shadow-sm rounded-lg overflow-hidden">
     <div className="overflow-x-auto">
      <table className="min-w-full divide-y divide-gray-200">
       <thead className="bg-gray-50">
        <tr>
         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-         Subject
+         Subjek
         </th>
         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-         Message
+         Pesan
         </th>
         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
          Status
         </th>
         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-         Date
+         Tanggal
         </th>
         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-         Actions
+         Aksi
         </th>
        </tr>
       </thead>
       <tbody className="bg-white divide-y divide-gray-200">
-       {localMessages.map((message) => (
+       {messages.map((message) => (
         <tr
          key={message.id}
          className="hover:bg-gray-50">
          <td className="px-6 py-4 whitespace-nowrap">
-          <div className="text-sm font-medium text-gray-900">
+          <div className="text-sm font-medium text-gray-900 max-w-xs truncate">
            {message.subject}
           </div>
-          <div className="text-sm text-gray-500">From: {message.name}</div>
          </td>
          <td className="px-6 py-4">
-          <div className="text-sm text-gray-900 max-w-xs truncate">
+          <div className="text-sm text-gray-900 max-w-md truncate">
            {message.message}
           </div>
          </td>
          <td className="px-6 py-4 whitespace-nowrap">
-          <span className={getStatusBadge(message.status)}>
-           {message.status}
+          <span
+           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+            message.status
+           )}`}>
+           {message.status === "unread"
+            ? "Belum Dibaca"
+            : message.status === "read"
+            ? "Sudah Dibaca"
+            : "Sudah Dibalas"}
           </span>
          </td>
          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
           {formatDate(message.createdAt)}
          </td>
-         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-          <div className="flex space-x-2">
-           <select
-            value={message.status}
-            onChange={(e) =>
-             handleStatusChange(
-              message.id,
-              e.target.value as "unread" | "read" | "replied"
-             )
-            }
-            className="text-xs border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="unread">Unread</option>
-            <option value="read">Read</option>
-            <option value="replied">Replied</option>
-           </select>
-           <button
-            onClick={() => handleDelete(message.id)}
-            className="text-red-600 hover:text-red-900 text-xs">
-            Delete
-           </button>
-          </div>
+         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+          <button
+           onClick={() => setSelectedMessage(message)}
+           className="text-blue-600 hover:text-blue-900">
+           Lihat
+          </button>
+          <select
+           value={message.status}
+           onChange={(e) =>
+            handleStatusUpdate(
+             message.id,
+             e.target.value as "unread" | "read" | "replied"
+            )
+           }
+           className="text-sm border border-gray-300 rounded px-2 py-1">
+           <option value="unread">Belum Dibaca</option>
+           <option value="read">Sudah Dibaca</option>
+           <option value="replied">Sudah Dibalas</option>
+          </select>
+          <button
+           onClick={() => handleDelete(message.id)}
+           className="text-red-600 hover:text-red-900">
+           Hapus
+          </button>
          </td>
         </tr>
        ))}
@@ -153,6 +149,107 @@ export default function MessagesTable({messages}: MessagesTableProps) {
      </table>
     </div>
    </div>
-  </div>
+
+   {/* Modal Detail Pesan */}
+   {selectedMessage && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+     <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="p-6">
+       <div className="flex justify-between items-start mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Detail Pesan</h3>
+        <button
+         onClick={() => setSelectedMessage(null)}
+         className="text-gray-400 hover:text-gray-600">
+         <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path
+           strokeLinecap="round"
+           strokeLinejoin="round"
+           strokeWidth={2}
+           d="M6 18L18 6M6 6l12 12"
+          />
+         </svg>
+        </button>
+       </div>
+
+       <div className="space-y-4">
+        <div>
+         <label className="block text-sm font-medium text-gray-700 mb-1">
+          Subjek
+         </label>
+         <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded border">
+          {selectedMessage.subject}
+         </p>
+        </div>
+
+        <div>
+         <label className="block text-sm font-medium text-gray-700 mb-1">
+          Pesan
+         </label>
+         <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded border whitespace-pre-wrap">
+          {selectedMessage.message}
+         </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+         <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+           Status
+          </label>
+          <span
+           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+            selectedMessage.status
+           )}`}>
+           {selectedMessage.status === "unread"
+            ? "Belum Dibaca"
+            : selectedMessage.status === "read"
+            ? "Sudah Dibaca"
+            : "Sudah Dibalas"}
+          </span>
+         </div>
+
+         <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+           Tanggal
+          </label>
+          <p className="text-sm text-gray-900">
+           {formatDate(selectedMessage.createdAt)}
+          </p>
+         </div>
+        </div>
+
+        <div className="flex justify-end space-x-3 pt-4">
+         <select
+          value={selectedMessage.status}
+          onChange={(e) => {
+           handleStatusUpdate(
+            selectedMessage.id,
+            e.target.value as "unread" | "read" | "replied"
+           );
+           setSelectedMessage({
+            ...selectedMessage,
+            status: e.target.value as "unread" | "read" | "replied",
+           });
+          }}
+          className="text-sm border border-gray-300 rounded px-3 py-2">
+          <option value="unread">Belum Dibaca</option>
+          <option value="read">Sudah Dibaca</option>
+          <option value="replied">Sudah Dibalas</option>
+         </select>
+         <button
+          onClick={() => handleDelete(selectedMessage.id)}
+          className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700">
+          Hapus Pesan
+         </button>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   )}
+  </>
  );
 }

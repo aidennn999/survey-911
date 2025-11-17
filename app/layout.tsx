@@ -1,21 +1,19 @@
 import type {Metadata} from "next";
 import {Inter} from "next/font/google";
 import "./globals.css";
-import {AuthProvider} from "./providers";
 
 const inter = Inter({subsets: ["latin"]});
 
 export const metadata: Metadata = {
- title: "Admin Panel - Customer Messages",
- description: "Admin panel for managing customer messages",
+ title: "Survey Pelanggan - Kritik & Saran",
+ description:
+  "Platform survey pelanggan yang aman dan anonym untuk menyampaikan kritik dan saran",
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}) {
  return (
-  <html lang="en">
-   <body className={inter.className}>
-    <AuthProvider>{children}</AuthProvider>
-   </body>
+  <html lang="id">
+   <body className={inter.className}>{children}</body>
   </html>
  );
 }
