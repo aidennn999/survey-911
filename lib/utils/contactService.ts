@@ -8,8 +8,6 @@ import {
  deleteDoc,
  query,
  orderBy,
- where,
- Timestamp,
 } from "firebase/firestore";
 import {firestore} from "@/lib/firebase/init";
 import {AnonymousMessage, AnonymousMessageFormData} from "@/types/contact";
