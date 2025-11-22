@@ -87,7 +87,7 @@ export async function getAnonymousMessageById(
 
 export async function updateMessageStatus(
  id: string,
- status: "unread" | "read" | "replied"
+ status: "unread" | "read"
 ): Promise<boolean> {
  try {
   await updateDoc(doc(firestore, "anonymous_messages", id), {
@@ -117,13 +117,11 @@ export async function getMessageStats() {
   const total = messages.length;
   const unread = messages.filter((msg) => msg.status === "unread").length;
   const read = messages.filter((msg) => msg.status === "read").length;
-  const replied = messages.filter((msg) => msg.status === "replied").length;
 
   return {
    total,
    unread,
    read,
-   replied,
   };
  } catch (error) {
   console.error("Error getting message stats:", error);
@@ -131,7 +129,6 @@ export async function getMessageStats() {
    total: 0,
    unread: 0,
    read: 0,
-   replied: 0,
   };
  }
 }

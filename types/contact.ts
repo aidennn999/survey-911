@@ -5,11 +5,8 @@ export interface AnonymousMessageFormData {
 
 export interface AnonymousMessage {
  id: string;
- name: string;
- email: string;
  subject: string;
  message: string;
- status: "unread" | "read" | "replied";
+ status: "unread" | "read";
  createdAt: Date;
- updatedAt: Date;
 }

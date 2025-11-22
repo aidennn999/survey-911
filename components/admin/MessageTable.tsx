@@ -20,7 +20,7 @@ export default function MessagesTable({
 
  const handleStatusUpdate = async (
   messageId: string,
-  newStatus: "unread" | "read" | "replied"
+  newStatus: "unread" | "read"
  ) => {
   const success = await updateMessageStatus(messageId, newStatus);
   if (success) {
@@ -46,8 +46,6 @@ export default function MessagesTable({
    case "unread":
     return "bg-red-100 text-red-800";
    case "read":
-    return "bg-yellow-100 text-yellow-800";
-   case "replied":
     return "bg-green-100 text-green-800";
    default:
     return "bg-gray-100 text-gray-800";
@@ -108,11 +106,7 @@ export default function MessagesTable({
            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
             message.status
            )}`}>
-           {message.status === "unread"
-            ? "Belum Dibaca"
-            : message.status === "read"
-            ? "Sudah Dibaca"
-            : "Sudah Dibalas"}
+           {message.status === "unread" ? "Belum Dibaca" : "Sudah Dibaca"}
           </span>
          </td>
          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -127,15 +121,11 @@ export default function MessagesTable({
           <select
            value={message.status}
            onChange={(e) =>
-            handleStatusUpdate(
-             message.id,
-             e.target.value as "unread" | "read" | "replied"
-            )
+            handleStatusUpdate(message.id, e.target.value as "unread" | "read")
            }
            className="text-sm border border-gray-300 rounded px-2 py-1">
            <option value="unread">Belum Dibaca</option>
            <option value="read">Sudah Dibaca</option>
-           <option value="replied">Sudah Dibalas</option>
           </select>
           <button
            onClick={() => handleDelete(message.id)}
@@ -205,9 +195,7 @@ export default function MessagesTable({
            )}`}>
            {selectedMessage.status === "unread"
             ? "Belum Dibaca"
-            : selectedMessage.status === "read"
-            ? "Sudah Dibaca"
-            : "Sudah Dibalas"}
+            : "Sudah Dibaca"}
           </span>
          </div>
 
@@ -227,17 +215,16 @@ export default function MessagesTable({
           onChange={(e) => {
            handleStatusUpdate(
             selectedMessage.id,
-            e.target.value as "unread" | "read" | "replied"
+            e.target.value as "unread" | "read"
            );
            setSelectedMessage({
             ...selectedMessage,
-            status: e.target.value as "unread" | "read" | "replied",
+            status: e.target.value as "unread" | "read",
            });
           }}
           className="text-sm border border-gray-300 rounded px-3 py-2">
           <option value="unread">Belum Dibaca</option>
           <option value="read">Sudah Dibaca</option>
-          <option value="replied">Sudah Dibalas</option>
          </select>
          <button
           onClick={() => handleDelete(selectedMessage.id)}
